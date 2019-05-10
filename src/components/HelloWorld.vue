@@ -1,7 +1,9 @@
 <template>
   <div class="hello">
     <button @click="getCategories()">GET_CATEGORIES</button>
-    <button @click="getLocations()">GET_LOCATION</button>
+    <button @click="getLocations()">GET_CITIES</button>
+    <button @click="getCollections()">GET_COLLECTIONS</button>
+    <button @click="getSearch()">SEARCH</button>
 <!--    <b-table striped hover :items="categories"></b-table>-->
     <b-form-select v-model="selected">
       <option :value="category.id" v-for="category in categories" :key="category.id">{{ category.name }}</option>
@@ -43,12 +45,33 @@
             console.log(err)
           })
       },
+      getCollections() {
+        this.categories = []
+        const city_id = 208
+        const dataParams = `city_id=${city_id}`
+        this.$store.dispatch('GET_COLLECTIONS', dataParams)
+          .then((resp) => {
+            console.log(resp.data)
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+      },
       getLocations() {
         this.categories = []
-        const requestData = {
-          res_id: 1,
-        }
-        this.$store.dispatch('GET_LOCATION', requestData)
+        const dataParams = `q=Lublin`
+        this.$store.dispatch('GET_CITIES', dataParams)
+          .then((resp) => {
+            console.log(resp.data)
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+      },
+      getSearch() {
+        this.categories = []
+        const dataParams = `entity_id=264&entity_type=city`
+        this.$store.dispatch('SEARCH', dataParams)
           .then((resp) => {
             console.log(resp.data)
           })

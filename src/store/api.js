@@ -17,7 +17,6 @@ export default {
     'GET_CATEGORIES': ({ commit }) => new Promise((resolve) => {
       axios({
         url: 'categories',
-        data: {},
         method: 'GET',
       })
           .then((resp) => {
@@ -28,10 +27,48 @@ export default {
             commit('ERROR', err)
           })
     }),
-    'GET_LOCATION': ({ commit }, requestData) => new Promise((resolve) => {
+    'GET_CITIES': ({ commit }, requestData) => new Promise((resolve) => {
       axios({
-        url: 'locations',
-        data: requestData,
+        url: `cities?${requestData}`,
+        method: 'GET',
+      })
+          .then((resp) => {
+            resolve(resp)
+            commit('GET_CATEGORIES_SUCCESS', resp.data)
+          })
+          .catch((err) => {
+            commit('ERROR', err)
+          })
+    }),
+    'GET_COLLECTIONS': ({ commit } , requestData) => new Promise((resolve) => {
+      axios({
+        url: `/collections?${requestData}`,
+        method: 'GET',
+      })
+          .then((resp) => {
+            resolve(resp)
+            commit('GET_CATEGORIES_SUCCESS', resp.data)
+          })
+          .catch((err) => {
+            commit('ERROR', err)
+          })
+    }),
+    'GET_RESTAURANT': ({ commit }) => new Promise((resolve) => {
+      axios({
+        url: 'restaurant',
+        method: 'GET',
+      })
+          .then((resp) => {
+            resolve(resp)
+            commit('GET_CATEGORIES_SUCCESS', resp.data)
+          })
+          .catch((err) => {
+            commit('ERROR', err)
+          })
+    }),
+    'SEARCH': ({ commit }, requestData) => new Promise((resolve) => {
+      axios({
+        url: `search?${requestData}`,
         method: 'GET',
       })
           .then((resp) => {
