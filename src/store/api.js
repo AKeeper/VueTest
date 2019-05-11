@@ -4,10 +4,14 @@ export default {
   state: {
     categories: [],
     errorMassage: '',
+    cities: [],
   },
   mutations: {
     GET_CATEGORIES_SUCCESS (state, resp) {
       state.categories = resp.data
+    },
+    GET_CITIES_SUCCESS (state, resp) {
+      state.cities = resp.data
     },
     ERROR(state, err) {
       state.errorMassage = err
@@ -20,7 +24,7 @@ export default {
         method: 'GET',
       })
           .then((resp) => {
-            resolve(resp)
+            resolve(resp);
             commit('GET_CATEGORIES_SUCCESS', resp.data)
           })
           .catch((err) => {
@@ -33,8 +37,8 @@ export default {
         method: 'GET',
       })
           .then((resp) => {
-            resolve(resp)
-            commit('GET_CATEGORIES_SUCCESS', resp.data)
+            resolve(resp);
+            commit('GET_CITIES_SUCCESS', resp.data)
           })
           .catch((err) => {
             commit('ERROR', err)
@@ -46,7 +50,7 @@ export default {
         method: 'GET',
       })
           .then((resp) => {
-            resolve(resp)
+            resolve(resp);
             commit('GET_CATEGORIES_SUCCESS', resp.data)
           })
           .catch((err) => {
@@ -59,7 +63,7 @@ export default {
         method: 'GET',
       })
           .then((resp) => {
-            resolve(resp)
+            resolve(resp);
             commit('GET_CATEGORIES_SUCCESS', resp.data)
           })
           .catch((err) => {
@@ -72,7 +76,7 @@ export default {
         method: 'GET',
       })
           .then((resp) => {
-            resolve(resp)
+            resolve(resp);
             commit('GET_CATEGORIES_SUCCESS', resp.data)
           })
           .catch((err) => {
