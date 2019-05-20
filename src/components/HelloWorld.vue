@@ -19,12 +19,11 @@
         </b-input-group-append>
       </b-input-group>
 
-      <div v-for="city in cities.location_suggestions" :key="city.id">
-        <div class="cities-box">{{ city.name }} </div>
-        <div class="cities-box">{{ city.country_name }} </div>
-        <img class="cities-box" :src="city.country_flag_url" alt="flag">
-        <b-button variant="outline-primary" @click="getSearch(city.id)">Get restaurants</b-button>
-      </div>
+<!--      <div v-for="city in cities.location_suggestions" :key="city.id">-->
+<!--        <div class="cities-box">{{ city.name }} </div>-->
+<!--        <div class="cities-box">{{ city.country_name }} </div>-->
+<!--        <img class="cities-box" :src="city.country_flag_url" alt="flag">-->
+<!--      </div>-->
       <b-col md="12" v-if="cities.location_suggestions.length !== 0">
         <b-col md="6" class="my-1">
           <b-form-group label-cols-sm="3" label="Search cities" class="mb-0">
@@ -53,28 +52,45 @@
             <template slot="country_name" slot-scope="data">
               <div class="cities-box">{{ data.item.country_name }}</div>
               <img class="cities-box" :src="data.item.country_flag_url" alt="flag">
+              <b-button variant="outline-primary" @click="getSearch(data.item.id)">Get restaurants</b-button>
             </template>
           </b-table>
         </b-col>
       </b-col>
-      <b-table
-          v-if="Object.entries(restaurants).length !== 0"
-          hover
-          :items="restaurants"
-          :fields="restaurantsTable"
-          id="restaurants"
-          small
-          :sort-by.sync="sortBy"
-          :sort-desc.sync="sortDesc"
-          primary-key="a"
-          :tbody-transition-props="transProps"
-          bordered
-      >
-        <template slot="featured_image" slot-scope="data">
-          <img class="cities-box" :src="data.item.featured_image" alt="">
-        </template>
-      </b-table>
-
+      <b-col md="12">
+        <b-table
+            v-if="Object.entries(restaurants).length !== 0"
+            hover
+            :items="restaurants"
+            :fields="restaurantsTable"
+            id="restaurants"
+            small
+            :sort-by.sync="sortBy"
+            :sort-desc.sync="sortDesc"
+            primary-key="a"
+            :tbody-transition-props="transProps"
+            bordered
+        >
+          <template slot="featured_image" slot-scope="data">
+            <b-card
+                :title="data.item.name.toUpperCase()"
+                :img-src="data.item.featured_image"
+                img-alt="Image"
+                img-top
+                tag="article"
+                style="max-width: 20rem;"
+                class="mb-2"
+            >
+              <b-card-text>
+                cuisines: <br>
+                {{ data.item.cuisines }}
+              </b-card-text>
+              <b-button :href="data.item.events_url" target="blank" variant="primary">Detail</b-button>
+            </b-card>
+            <img class="cities-box" :src="data.item.featured_image" alt="">
+          </template>
+        </b-table>
+      </b-col>
       <!--    <b-form-select v-model="selected">-->
       <!--      <option :value="category.id" v-for="category in categories" :key="category.id">{{ category.name }}</option>-->
       <!--    </b-form-select>-->
@@ -105,9 +121,8 @@
         citiesName: '',
         selected: null,
         restaurantsTable: {
-          featured_image: { label: 'featured_image', sortable: false },
-          name: { label: 'name', sortable: true },
-          cuisines: { label: 'cuisines', sortable: true },
+          featured_image: { label: '', sortable: false },
+          location: { label: '', sortable: false },
         },
         citiesTable: {
           country_name: { label: 'Country name', sortable: true },
@@ -176,8 +191,8 @@
 
   .cities-box{
     display: inline-block;
+    width: 40px;
   }
   img{
-    width: 40px;
   }
 </style>
