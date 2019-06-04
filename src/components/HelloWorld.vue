@@ -1,29 +1,26 @@
 <template>
   <b-container fluid>
-    <b-row>
-      <b-input-group class="mb-3">
-        <b-form-input
-            v-model="citiesName"
-            placeholder="Sities"
-            @keyup.enter="getCities()"
-        >
-        </b-form-input>
-        <b-input-group-append>
-          <b-button
-              size="sm"
-              text="Button"
-              variant="success"
-              @click="getCities()"
+    <b-row class="justify-content-md-center">
+      <b-col cols="12" md="auto">
+        <b-input-group class="mb-3">
+          <b-form-input
+              v-model="citiesName"
+              placeholder="Sities"
               @keyup.enter="getCities()"
-          >Search city</b-button>
-        </b-input-group-append>
-      </b-input-group>
-
-<!--      <div v-for="city in cities.location_suggestions" :key="city.id">-->
-<!--        <div class="cities-box">{{ city.name }} </div>-->
-<!--        <div class="cities-box">{{ city.country_name }} </div>-->
-<!--        <img class="cities-box" :src="city.country_flag_url" alt="flag">-->
-<!--      </div>-->
+          >
+          </b-form-input>
+          <b-input-group-append>
+            <b-button
+                size="sm"
+                text="Button"
+                variant="success"
+                @click="getCities()"
+                @keyup.enter="getCities()"
+            >Search city
+            </b-button>
+          </b-input-group-append>
+        </b-input-group>
+      </b-col>
       <b-col md="12" v-if="cities.location_suggestions.length !== 0">
         <b-col md="6" class="my-1">
           <b-form-group label-cols-sm="3" label="Search cities" class="mb-0">
@@ -35,7 +32,7 @@
             </b-input-group>
           </b-form-group>
         </b-col>
-        <b-col md="12">
+        <b-col cols="12" md="auto">
           <b-table
               hover
               :items="cities.location_suggestions"
@@ -50,26 +47,43 @@
               :filter="filterCities"
           >
             <template slot="country_name" slot-scope="data">
-              <div class="cities-box">{{ data.item.country_name }}</div>
               <img class="cities-box" :src="data.item.country_flag_url" alt="flag">
-              <b-button variant="outline-primary" @click="getSearch(data.item.id)">Get restaurants</b-button>
+              <div class="cities-box">{{ data.item.country_name }}</div>
+            </template>
+            <template slot="name" slot-scope="data">
+              <div>{{ data.item.name }}</div>
+              <b-button
+                  variant="outline-primary"
+                  @click="cityId = data.item.id, restaurants = [], showRestaurants = true, getSearch()">
+                Get restaurants
+              </b-button>
             </template>
           </b-table>
         </b-col>
       </b-col>
-      <b-col md="12">
+    </b-row>
+    <b-row v-if="showRestaurants" class="justify-content-md-center">
+      <b-col md="12" class="my-1">
+        <b-form-group label-cols-sm="3" label="Per page" class="mb-0">
+          <b-form-select v-model="perPage" :options="pageOptions"></b-form-select>
+        </b-form-group>
+      </b-col>
+      <b-col cols="12" md="auto" :key="restaurantsKey">
         <b-table
-            v-if="Object.entries(restaurants).length !== 0"
             hover
             :items="restaurants"
             :fields="restaurantsTable"
             id="restaurants"
+            :current-page="currentPage"
+            :per-page="perPage"
             small
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="sortDesc"
+            :sort-by.sync="sortByR"
+            :sort-desc.sync="sortDescR"
+            :sort-direction="sortDirectionR"
             primary-key="a"
             :tbody-transition-props="transProps"
             bordered
+            :filter="filterRes"
         >
           <template slot="featured_image" slot-scope="data">
             <b-card
@@ -82,18 +96,29 @@
                 class="mb-2"
             >
               <b-card-text>
-                cuisines: <br>
-                {{ data.item.cuisines }}
+                <span :style="'color: #' + data.item.user_rating.rating_color + ';'">
+                  Rating: {{ data.item.user_rating.aggregate_rating }}
+                </span> <br>
+                Votes: {{data.item.user_rating.votes}}<br>
+                {{ data.item.location.address }}
               </b-card-text>
               <b-button :href="data.item.events_url" target="blank" variant="primary">Detail</b-button>
             </b-card>
-            <img class="cities-box" :src="data.item.featured_image" alt="">
+          </template>
+          <template slot="cuisines" slot-scope="data">
+            cuisines: {{ data.item.cuisines }}
           </template>
         </b-table>
       </b-col>
-      <!--    <b-form-select v-model="selected">-->
-      <!--      <option :value="category.id" v-for="category in categories" :key="category.id">{{ category.name }}</option>-->
-      <!--    </b-form-select>-->
+      <b-col md="8" class="my-1">
+        <b-pagination
+            v-model="currentPage"
+            :total-rows="totalRows"
+            :per-page="perPage"
+            class="my-0"
+            @click="getSearch()"
+        ></b-pagination>
+      </b-col>
     </b-row>
   </b-container>
 </template>
@@ -109,11 +134,23 @@
 
     data() {
       return {
+        currentPage: 1,
+        restaurantsKey: 0,
+        perPage: 20,
+        totalRows: null,
         sortBy: 'name',
+        sortByR: 'cuisines',
+        sortDescR: false,
+        sortDirectionR: 'asc',
         filterCities: '',
+        filterRes: '',
+        cityId: '',
         sortDesc: false,
         loading: false,
+        showRestaurants: false,
         categories: [],
+        pageOptions: [10, 20, 30],
+        checkArray: [],
         cities: {
           location_suggestions: [],
         },
@@ -121,31 +158,25 @@
         citiesName: '',
         selected: null,
         restaurantsTable: {
-          featured_image: { label: '', sortable: false },
-          location: { label: '', sortable: false },
+          featured_image: {label: 'Restaurant', sortable: false},
+          cuisines: {label: 'cuisines', sortable: false},
         },
         citiesTable: {
-          country_name: { label: 'Country name', sortable: true },
+          country_name: {label: 'Country', sortable: true},
           // country_name: { label: 'country_name', sortable: true },
-          name: { label: 'name', sortable: true },
+          name: {label: 'City', sortable: true},
         },
         transProps: {
           name: 'flip-list'
         },
       }
     },
-
+    watch: {
+      currentPage() {
+        this.getSearch()
+      }
+    },
     methods: {
-      getCategories() {
-        this.categories = [];
-        this.$store.dispatch('GET_CATEGORIES')
-          .then((resp) => {
-            resp.data.categories.forEach((elem) => {
-              this.categories.push(elem.categories)
-            });
-            if (this.categories[0].id) this.selected = this.categories[0].id
-          })
-      },
       getCities() {
         const dataParams = `q=${this.citiesName}&count=100`;
         this.$store.dispatch('GET_CITIES', dataParams)
@@ -153,14 +184,20 @@
             this.cities = resp.data;
           })
       },
-      getSearch(cityId) {
-        const dataParams = `entity_id=${cityId}&entity_type=city`;
-        this.$store.dispatch('SEARCH', dataParams)
-          .then((resp) => {
-            resp.data.restaurants.forEach((elem) => {
-              this.restaurants.push(elem.restaurant)
-            })
-          })
+      getSearch() {
+        const startPage = `&start=${this.currentPage * this.perPage}`;
+        const dataParams = `entity_id=${this.cityId}&entity_type=city${startPage}&count=${this.perPage}`;
+        if (!this.checkArray.includes(this.currentPage)) {
+          this.checkArray.push(this.currentPage);
+          this.$store.dispatch('SEARCH', dataParams)
+            .then((resp) => {
+              this.totalRows = resp.data.results_found;
+              resp.data.restaurants.forEach((elem) => {
+                this.restaurants.push(elem.restaurant);
+              });
+              this.restaurantsKey += 1;
+            });
+        }
       },
     },
   }
@@ -189,10 +226,11 @@
     transition: transform 1s;
   }
 
-  .cities-box{
+  .cities-box {
     display: inline-block;
-    width: 40px;
   }
-  img{
+
+  img.cities-box {
+    width: 40px;
   }
 </style>
