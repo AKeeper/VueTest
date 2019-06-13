@@ -63,9 +63,19 @@
       </b-col>
     </b-row>
     <b-row v-if="showRestaurants" class="justify-content-md-center">
-      <b-col md="12" class="my-1">
+      <b-col md="6" class="my-1">
         <b-form-group label-cols-sm="3" label="Per page" class="mb-0">
           <b-form-select v-model="perPage" :options="pageOptions"></b-form-select>
+        </b-form-group>
+      </b-col>
+      <b-col md="6">
+        <b-form-group label-cols-sm="3" label="Search cuisines" class="mb-0">
+          <b-input-group>
+            <b-form-input v-model="filterRes" placeholder="Type to Search"></b-form-input>
+            <b-input-group-append>
+              <b-button :disabled="!filterRes" @click="filterRes = ''">Clear</b-button>
+            </b-input-group-append>
+          </b-input-group>
         </b-form-group>
       </b-col>
       <b-col cols="12" md="auto" :key="restaurantsKey">
@@ -110,7 +120,9 @@
           </template>
         </b-table>
       </b-col>
-      <b-col md="8" class="my-1">
+    </b-row>
+    <b-row v-if="showRestaurants" class="justify-content-md-center">
+      <b-col md="6" class="my-1">
         <b-pagination
             v-model="currentPage"
             :total-rows="totalRows"
